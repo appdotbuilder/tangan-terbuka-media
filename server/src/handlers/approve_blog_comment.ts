@@ -1,16 +1,27 @@
+import { db } from '../db';
+import { blogCommentsTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import { type BlogComment } from '../schema';
 
-export async function approveBlogComment(commentId: number): Promise<BlogComment> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is approving a blog comment for public display.
-    // Should update the approved status to true.
-    return Promise.resolve({
-        id: commentId,
-        post_id: 1,
-        author_name: 'Author',
-        author_email: 'author@example.com',
-        content: 'Comment content',
-        approved: true,
-        created_at: new Date()
-    } as BlogComment);
-}
+export const approveBlogComment = async (commentId: number): Promise<BlogComment> => {
+  try {
+    // Update the comment to set approved = true
+    const result = await db
+      .update(blogCommentsTable)
+      .set({ 
+        approved: true 
+      })
+      .where(eq(blogCommentsTable.id, commentId))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Comment with id ${commentId} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Blog comment approval failed:', error);
+    throw error;
+  }
+};

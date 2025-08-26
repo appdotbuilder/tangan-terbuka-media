@@ -1,8 +1,24 @@
+import { db } from '../db';
+import { subscriptionsTable } from '../db/schema';
 import { type Subscription } from '../schema';
+import { eq } from 'drizzle-orm';
 
-export async function getSubscriptions(activeOnly: boolean = true): Promise<Subscription[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching email subscriptions.
-    // By default, should return only active subscriptions.
-    return [];
-}
+export const getSubscriptions = async (activeOnly: boolean = true): Promise<Subscription[]> => {
+  try {
+    // Build query with conditional where clause
+    const results = activeOnly
+      ? await db.select()
+          .from(subscriptionsTable)
+          .where(eq(subscriptionsTable.active, true))
+          .execute()
+      : await db.select()
+          .from(subscriptionsTable)
+          .execute();
+
+    // Return results - no numeric conversions needed for subscriptions table
+    return results;
+  } catch (error) {
+    console.error('Get subscriptions failed:', error);
+    throw error;
+  }
+};

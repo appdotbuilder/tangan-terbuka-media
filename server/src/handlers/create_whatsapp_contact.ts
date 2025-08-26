@@ -1,14 +1,23 @@
+import { db } from '../db';
+import { whatsappContactsTable } from '../db/schema';
 import { type CreateWhatsappContactInput, type WhatsappContact } from '../schema';
 
-export async function createWhatsappContact(input: CreateWhatsappContactInput): Promise<WhatsappContact> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new WhatsApp contact for manual broadcasting.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createWhatsappContact = async (input: CreateWhatsappContactInput): Promise<WhatsappContact> => {
+  try {
+    // Insert WhatsApp contact record
+    const result = await db.insert(whatsappContactsTable)
+      .values({
         name: input.name,
         phone: input.phone,
-        notes: input.notes || null,
-        active: true,
-        created_at: new Date()
-    } as WhatsappContact);
-}
+        notes: input.notes,
+        active: true // Default to active for new contacts
+      })
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('WhatsApp contact creation failed:', error);
+    throw error;
+  }
+};

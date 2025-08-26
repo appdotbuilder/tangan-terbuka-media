@@ -1,8 +1,31 @@
+import { db } from '../db';
+import { bookOrdersTable, bookOrderItemsTable, booksTable } from '../db/schema';
 import { type BookOrder } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export async function getBookOrderById(id: number): Promise<BookOrder | null> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a single book order by its ID.
-    // Should include order items and book details for each item.
-    return null;
+  try {
+    // First, get the book order
+    const orderResults = await db.select()
+      .from(bookOrdersTable)
+      .where(eq(bookOrdersTable.id, id))
+      .execute();
+
+    if (orderResults.length === 0) {
+      return null;
+    }
+
+    const order = orderResults[0];
+
+    // Convert numeric fields back to numbers
+    const bookOrder: BookOrder = {
+      ...order,
+      total_amount: parseFloat(order.total_amount)
+    };
+
+    return bookOrder;
+  } catch (error) {
+    console.error('Failed to fetch book order:', error);
+    throw error;
+  }
 }

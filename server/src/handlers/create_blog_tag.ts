@@ -1,12 +1,21 @@
+import { db } from '../db';
+import { blogTagsTable } from '../db/schema';
 import { type CreateBlogTagInput, type BlogTag } from '../schema';
 
-export async function createBlogTag(input: CreateBlogTagInput): Promise<BlogTag> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new blog tag and persisting it in the database.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createBlogTag = async (input: CreateBlogTagInput): Promise<BlogTag> => {
+  try {
+    // Insert blog tag record
+    const result = await db.insert(blogTagsTable)
+      .values({
         name: input.name,
-        slug: input.slug,
-        created_at: new Date()
-    } as BlogTag);
-}
+        slug: input.slug
+      })
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('Blog tag creation failed:', error);
+    throw error;
+  }
+};

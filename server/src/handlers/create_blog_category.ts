@@ -1,13 +1,26 @@
+import { db } from '../db';
+import { blogCategoriesTable } from '../db/schema';
 import { type CreateBlogCategoryInput, type BlogCategory } from '../schema';
 
-export async function createBlogCategory(input: CreateBlogCategoryInput): Promise<BlogCategory> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new blog category and persisting it in the database.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createBlogCategory = async (input: CreateBlogCategoryInput): Promise<BlogCategory> => {
+  try {
+    // Insert blog category record
+    const result = await db.insert(blogCategoriesTable)
+      .values({
         name: input.name,
         slug: input.slug,
-        description: input.description || null,
-        created_at: new Date()
-    } as BlogCategory);
-}
+        description: input.description
+      })
+      .returning()
+      .execute();
+
+    // Return the created blog category
+    const category = result[0];
+    return {
+      ...category
+    };
+  } catch (error) {
+    console.error('Blog category creation failed:', error);
+    throw error;
+  }
+};
